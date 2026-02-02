@@ -18,7 +18,9 @@ class Person {
   }
   
   void makeImmune() {
-  state = IMMUNE; // You might need to add "final int IMMUNE = 2;" at the top if not there
+  if (state == HEALTHY) {
+    state = IMMUNE;
+  }
 }
 
 boolean isImmune() { 
