@@ -1,13 +1,28 @@
-// Main File: infection_simulator.pde
- 
+int POPULATION_SIZE = 100;
+Population population; 
+
 void setup() {
   size(1000, 700);
-  background(25, 20, 35); 
+  
+  // start the game
+  population = new Population(POPULATION_SIZE);
+  
+  // patient zero
+  population.infectRandom();
 }
-// Dark purple background}
 
 void draw() {
-  // TODO: Add transparency effect here for trails later  background(25, 20, 35);
   
-  // TODO: Add logic here
+  fill(25, 20, 35, 60); 
+  noStroke();
+  rect(0, 0, width, height);
+  
+  
+  population.update();
+  
+  
+  population.spreadInfection(40, 0.05); 
+  
+  
+  population.display();
 }
