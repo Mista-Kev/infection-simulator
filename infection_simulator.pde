@@ -2,7 +2,8 @@
  int POPULATION_SIZE = 100;
 Population population;
 ArrayList<Hotzone> hotzones;
- 
+float HOTZONE_RADIUS_BONUS = 25;
+
 void setup() {
   size(1000, 700);
   

@@ -12,6 +12,22 @@ class Hotzone {
       sumY += p.pos.y; 
     }
     center = new PVector(sumX / cluster.size(), sumY / cluster.size());
+
+    // Calculate the radius based on the furthest person
+    float maxDist = 0;
+    for (Person p : cluster) {
+      float d = PVector.dist(center, p.pos);
+      if (d > maxDist) maxDist = d;
+    }
+    
+    radius = maxDist + 15; 
+    effectRadius = radius + HOTZONE_RADIUS_BONUS; 
+  }
+  
+  // collision detection
+  boolean contains(PVector pos) {
+    return PVector.dist(center, pos) < effectRadius;
+  }
   }
 
   void display() {
