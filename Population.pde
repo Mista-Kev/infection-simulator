@@ -36,4 +36,15 @@ class Population {
   void infectRandom() {
     persons[0].infect(); 
   }
+
+  boolean vaccinateAt(float x, float y) {
+  for(Person p : persons) {
+    // Check if mouse is clicking this person (with some wiggle room of 20px)
+    if(dist(x, y, p.pos.x, p.pos.y) < 20 && p.isHealthy()) {
+      p.makeImmune();
+      return true; // Successful vaccination
+    }
+  }
+  return false;
+}
 }

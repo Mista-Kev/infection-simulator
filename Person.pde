@@ -17,6 +17,15 @@ class Person {
     state = INFECTED;
   }
   
+  void makeImmune() {
+  state = IMMUNE; // You might need to add "final int IMMUNE = 2;" at the top if not there
+}
+
+boolean isImmune() { 
+  return state == IMMUNE; 
+}
+
+
   void update() {
     pos.add(vel);
     // Boundary checks

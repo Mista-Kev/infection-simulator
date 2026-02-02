@@ -66,3 +66,11 @@ void detectHotzones() {
     }
   }
 }
+void mousePressed() {
+  // Try to vaccinate where the player clicked
+  boolean success = population.vaccinateAt(mouseX, mouseY);
+  
+  if(success) {
+    println("Vaccine deployed!");
+  }
+}
