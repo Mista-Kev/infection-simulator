@@ -2,12 +2,12 @@
 // Settings
 int NUM_PEOPLE = 100;
 float INFECTION_RADIUS = 45;
-float INFECTION_CHANCE = 0.005; // Lowered so it's not impossible
+float INFECTION_CHANCE = 0.012; // Lowered so it's not impossible
 float HOTZONE_RADIUS_BONUS = 25; 
 
 int TOTAL_VACCINES = 20; // Increased to actually make it possible to each 20%
 int GAME_DURATION = 60;
-int VACCINE_COOLDOWN = 200; // Faster clicking
+int VACCINE_COOLDOWN = 400; // Faster clicking
 
 Population population;
 ArrayList<Hotzone> hotzones;
@@ -35,13 +35,13 @@ void resetSim() {
   gameEnded = false;
   startTime = millis(); 
 
-  // 2 patient zeros
+  // 3 patient zeros
+  population.infectRandom();
   population.infectRandom();
   population.infectRandom();
 }
 
 void draw() {
-  // background with transparency for trails
   // background with transparency for trails
   fill(25, 20, 35, 60);
   noStroke();
@@ -50,17 +50,11 @@ void draw() {
   // check if game has started
   if (!gameStarted) {
     drawStartScreen();
-    return; 
-  }
-
-  // check if game has started
-  if (!gameStarted) {
-    drawStartScreen();
-    return; 
+    return;
   }
 
   if (!gameEnded) {
-    updateGameLogic(); 
+    updateGameLogic();
   }
   
   
@@ -100,18 +94,8 @@ void drawHUD() {
 
   fill(255, 80, 80);
   text("INFECTED: " + infected, 200, height - 25);
-  
-  // timer and vaccines 
-  textAlign(CENTER);
-  int time = GAME_DURATION - ((millis() - startTime)/1000);
-  if(time < 0) time = 0;
-  fill(255);
-  text(time + "s", width/2, height - 25);
 
-  textAlign(RIGHT);
-  text("Vaccines: " + vaccinesLeft, width - 50, height - 25);
-  
-  // timer and vaccines 
+  // timer and vaccines
   textAlign(CENTER);
   int time = GAME_DURATION - ((millis() - startTime)/1000);
   if(time < 0) time = 0;
@@ -251,22 +235,6 @@ void detectHotzones() {
 }
 
 void mousePressed() {
-  // start game on click
-  if (!gameStarted) {
-    gameStarted = true;
-    startTime = millis();
-    return;
-  }
-
-  if (gameEnded) return;
-
-  if (vaccinesLeft > 0 && millis() - lastVaccineTime > VACCINE_COOLDOWN) {
-    boolean success = population.vaccinateNearest(mouseX, mouseY, 60);
-    if (success) {
-      vaccinesLeft--;
-      lastVaccineTime = millis();
-      println("Vaccine deployed!");
-    }
   // start game on click
   if (!gameStarted) {
     gameStarted = true;
