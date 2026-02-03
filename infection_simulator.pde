@@ -1,4 +1,3 @@
- 
 // Settings
 int NUM_PEOPLE = 100;
 float INFECTION_RADIUS = 45;
@@ -41,13 +40,21 @@ void resetSim() {
 }
 
 void draw() {
+  // background with transparency for trails
   fill(25, 20, 35, 60);
   noStroke();
   rect(0, 0, width, height);
 
+  // check if game has started
+  if (!gameStarted) {
+    drawStartScreen();
+    return; 
+  }
+
   if (!gameEnded) {
     updateGameLogic(); 
   }
+  
   // draw hotzones first
   for (Hotzone hz : hotzones) {
     hz.display();
@@ -57,6 +64,11 @@ void draw() {
 
   // ✅ draw UI LAST (on top)
   drawHUD();
+
+  // show end screen if needed
+  if (gameEnded) {
+    drawEndScreen();
+  }
 }
 
 void drawHUD() {
@@ -78,6 +90,16 @@ void drawHUD() {
 
   fill(255, 80, 80);
   text("INFECTED: " + infected, 200, height - 25);
+  
+  // timer and vaccines 
+  textAlign(CENTER);
+  int time = GAME_DURATION - ((millis() - startTime)/1000);
+  if(time < 0) time = 0;
+  fill(255);
+  text(time + "s", width/2, height - 25);
+
+  textAlign(RIGHT);
+  text("Vaccines: " + vaccinesLeft, width - 50, height - 25);
 
   float healthPct = (float) healthy / total;
 
@@ -88,6 +110,54 @@ void drawHUD() {
   else fill(255, 80, 80);
 
   rect(width - 250, height - 35, 200 * healthPct, 20, 10);
+}
+
+// new screens added by dev b
+void drawStartScreen() {
+  // run sim in background
+  population.update();
+  population.display();
+
+  fill(0, 200);
+  rect(0, 0, width, height);
+
+  textAlign(CENTER);
+  fill(100, 255, 100);
+  textSize(40);
+  text("INFECTION SIMULATOR", width/2, height/2 - 50);
+
+  textSize(16);
+  fill(255);
+  text("Goal: Keep infection under 80%", width/2, height/2);
+  text("Click to Vaccinate. Press 'R' to Restart.", width/2, height/2 + 30);
+  
+  fill(200);
+  textSize(14);
+  text("[ CLICK TO START ]", width/2, height/2 + 80);
+}
+
+void drawEndScreen() {
+  fill(0, 200);
+  rect(0, 0, width, height);
+
+  textAlign(CENTER);
+  textSize(50);
+  
+  if (playerWon) {
+    fill(100, 255, 100);
+    text("OUTBREAK CONTAINED", width/2, height/2 - 20);
+  } else {
+    fill(255, 80, 80);
+    text("CRITICAL FAILURE", width/2, height/2 - 20);
+  }
+  
+  fill(255);
+  textSize(20);
+  text(playerWon ? "Majority saved." : "Infection > 80%", width/2, height/2 + 40);
+
+  fill(150);
+  textSize(14);
+  text("Press 'R' to Restart", width/2, height/2 + 100);
 }
 
 void updateGameLogic() {
@@ -150,8 +220,25 @@ void detectHotzones() {
 }
 
 void mousePressed() {
-  boolean success = population.vaccinateNearest(mouseX, mouseY, 60);
-  if (success) {
-    println("Vaccine deployed!");
+  // start game on click
+  if (!gameStarted) {
+    gameStarted = true;
+    startTime = millis();
+    return;
   }
+
+  if (gameEnded) return;
+
+  if (vaccinesLeft > 0 && millis() - lastVaccineTime > VACCINE_COOLDOWN) {
+    boolean success = population.vaccinateNearest(mouseX, mouseY, 60);
+    if (success) {
+      vaccinesLeft--;
+      lastVaccineTime = millis();
+      println("Vaccine deployed!");
+    }
+  }
+}
+
+void keyPressed() {
+  if (key == 'r' || key == 'R') resetSim();
 }
