@@ -182,16 +182,23 @@ void updateGameLogic() {
   population.spreadInfection(INFECTION_RADIUS, INFECTION_CHANCE, hotzones);
   population.update();
 
-  // Stats 
+  // Stats
   int infected = population.getInfectedCount();
+  int immune = population.getImmuneCount();
   int total = NUM_PEOPLE;
   int elapsed = (millis() - startTime) / 1000;
 
+  // Win if all vaccines used and 20+ people protected
+  if (vaccinesLeft == 0 && immune >= 20) {
+    gameEnded = true;
+    playerWon = true;
+    println("DEBUG: Won by vaccinating 20+ people!");
+  }
   // Game Over if > 80% infected
-  if (infected > total * 0.80) {
+  else if (infected > total * 0.80) {
     gameEnded = true;
     playerWon = false;
-    println("DEBUG: Lost via infection limit"); 
+    println("DEBUG: Lost via infection limit");
   }
   // Time up
   else if (elapsed >= GAME_DURATION) {

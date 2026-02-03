@@ -87,4 +87,12 @@ int getHealthyCount() {
   }
   return count;
 }
+
+int getImmuneCount() {
+  int count = 0;
+  for (Person p : persons) {
+    if (p.isImmune()) count++;
+  }
+  return count;
+}
 }
