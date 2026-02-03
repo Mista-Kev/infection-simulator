@@ -1,15 +1,42 @@
  
- int POPULATION_SIZE = 100;
+// Settings
+int NUM_PEOPLE = 100;
+float INFECTION_RADIUS = 45;
+float INFECTION_CHANCE = 0.012;
+float HOTZONE_RADIUS_BONUS = 25; 
+
+int TOTAL_VACCINES = 8; 
+int GAME_DURATION = 60;
+int VACCINE_COOLDOWN = 500;
+
 Population population;
 ArrayList<Hotzone> hotzones;
-float HOTZONE_RADIUS_BONUS = 25;
+
+boolean gameStarted = false; // needed for start screen
+boolean gameEnded = false; 
+boolean playerWon = false;
+
+int startTime;
+int vaccinesLeft;
+int lastVaccineTime = 0;
+
 
 void setup() {
   size(1000, 700);
+  resetSim();
+}
 
-  population = new Population(POPULATION_SIZE);
+void resetSim() {
+  population = new Population(NUM_PEOPLE);
   hotzones = new ArrayList<Hotzone>();
+  vaccinesLeft = TOTAL_VACCINES;
+  
+  gameStarted = false;
+  gameEnded = false;
+  startTime = millis(); 
 
+  // 2 patient zeros
+  population.infectRandom();
   population.infectRandom();
 }
 
@@ -18,13 +45,9 @@ void draw() {
   noStroke();
   rect(0, 0, width, height);
 
-  // check for clusters
-  hotzones.clear();
-  detectHotzones();
-
-  population.update();
-  population.spreadInfection(40, 0.05);
-
+  if (!gameEnded) {
+    updateGameLogic(); 
+  }
   // draw hotzones first
   for (Hotzone hz : hotzones) {
     hz.display();
@@ -45,8 +68,8 @@ void drawHUD() {
 
   int infected = population.getInfectedCount();
   int healthy = population.getHealthyCount();
-  int total = POPULATION_SIZE;
-
+  int total = NUM_PEOPLE;
+  
   textAlign(LEFT, CENTER);
   textSize(16);
 
@@ -67,7 +90,35 @@ void drawHUD() {
   rect(width - 250, height - 35, 200 * healthPct, 20, 10);
 }
 
+void updateGameLogic() {
+  detectHotzones();
+  
+  // link hotzone and population
+  population.spreadInfection(INFECTION_RADIUS, INFECTION_CHANCE, hotzones);
+  population.update();
+
+  // Stats 
+  int infected = population.getInfectedCount();
+  int total = NUM_PEOPLE;
+  int elapsed = (millis() - startTime) / 1000;
+
+  // Game Over if > 80% infected
+  if (infected > total * 0.80) {
+    gameEnded = true;
+    playerWon = false;
+    println("DEBUG: Lost via infection limit"); 
+  }
+  // Time up
+  else if (elapsed >= GAME_DURATION) {
+    gameEnded = true;
+    // Win if we kept it under 80%
+    playerWon = (infected <= total * 0.80);
+    println("DEBUG: Time up. Won? " + playerWon);
+  }
+}
+
 void detectHotzones() {
+  hotzones.clear();
   ArrayList<Person> infectedList = new ArrayList<Person>();
   for (Person p : population.persons) {
     if (p.isInfected()) infectedList.add(p);
@@ -99,7 +150,7 @@ void detectHotzones() {
 }
 
 void mousePressed() {
-  boolean success = population.vaccinateAt(mouseX, mouseY);
+  boolean success = population.vaccinateNearest(mouseX, mouseY, 60);
   if (success) {
     println("Vaccine deployed!");
   }
