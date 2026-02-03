@@ -1,12 +1,13 @@
+
 // Settings
 int NUM_PEOPLE = 100;
 float INFECTION_RADIUS = 45;
-float INFECTION_CHANCE = 0.012;
+float INFECTION_CHANCE = 0.005; // Lowered so it's not impossible
 float HOTZONE_RADIUS_BONUS = 25; 
 
-int TOTAL_VACCINES = 8; 
+int TOTAL_VACCINES = 20; // Increased to actually make it possible to each 20%
 int GAME_DURATION = 60;
-int VACCINE_COOLDOWN = 500;
+int VACCINE_COOLDOWN = 200; // Faster clicking
 
 Population population;
 ArrayList<Hotzone> hotzones;
@@ -41,9 +42,16 @@ void resetSim() {
 
 void draw() {
   // background with transparency for trails
+  // background with transparency for trails
   fill(25, 20, 35, 60);
   noStroke();
   rect(0, 0, width, height);
+
+  // check if game has started
+  if (!gameStarted) {
+    drawStartScreen();
+    return; 
+  }
 
   // check if game has started
   if (!gameStarted) {
@@ -55,6 +63,7 @@ void draw() {
     updateGameLogic(); 
   }
   
+  
   // draw hotzones first
   for (Hotzone hz : hotzones) {
     hz.display();
@@ -62,8 +71,9 @@ void draw() {
 
   population.display();
 
-  // ✅ draw UI LAST (on top)
+  
   drawHUD();
+  drawCursorPreview(); // bit more feedback for what you have to do
 
   // show end screen if needed
   if (gameEnded) {
@@ -100,6 +110,16 @@ void drawHUD() {
 
   textAlign(RIGHT);
   text("Vaccines: " + vaccinesLeft, width - 50, height - 25);
+  
+  // timer and vaccines 
+  textAlign(CENTER);
+  int time = GAME_DURATION - ((millis() - startTime)/1000);
+  if(time < 0) time = 0;
+  fill(255);
+  text(time + "s", width/2, height - 25);
+
+  textAlign(RIGHT);
+  text("Vaccines: " + vaccinesLeft, width - 50, height - 25);
 
   float healthPct = (float) healthy / total;
 
@@ -110,6 +130,17 @@ void drawHUD() {
   else fill(255, 80, 80);
 
   rect(width - 250, height - 35, 200 * healthPct, 20, 10);
+}
+
+// shows range of vaccine
+void drawCursorPreview() {
+  if (vaccinesLeft > 0 && !gameEnded && gameStarted) {
+    noFill();
+    stroke(100, 255, 100, 150); // Green aiming circle
+    strokeWeight(2);
+    ellipse(mouseX, mouseY, 40, 40); 
+    noStroke();
+  }
 }
 
 // new screens added by dev b
@@ -220,6 +251,22 @@ void detectHotzones() {
 }
 
 void mousePressed() {
+  // start game on click
+  if (!gameStarted) {
+    gameStarted = true;
+    startTime = millis();
+    return;
+  }
+
+  if (gameEnded) return;
+
+  if (vaccinesLeft > 0 && millis() - lastVaccineTime > VACCINE_COOLDOWN) {
+    boolean success = population.vaccinateNearest(mouseX, mouseY, 60);
+    if (success) {
+      vaccinesLeft--;
+      lastVaccineTime = millis();
+      println("Vaccine deployed!");
+    }
   // start game on click
   if (!gameStarted) {
     gameStarted = true;
