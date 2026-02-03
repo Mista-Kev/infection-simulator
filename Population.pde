@@ -47,4 +47,20 @@ class Population {
   }
   return false;
 }
+// counters for HUD
+int getInfectedCount() {
+  int count = 0;
+  for (Person p : persons) {
+    if (p.isInfected()) count++;
+  }
+  return count;
+}
+
+int getHealthyCount() {
+  int count = 0;
+  for (Person p : persons) {
+    if (p.isHealthy()) count++;
+  }
+  return count;
+}
 }
